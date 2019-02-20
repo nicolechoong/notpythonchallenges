@@ -1,0 +1,131 @@
+# 1 PLAYER VS COMPUTER, COMPUTER MAKES RANDOM MOVES
+
+import random
+player = []
+com = []
+deck = []
+
+def genDeck():
+    for i in ["R","Y","G","B"]:
+        for j in range(0,10):
+            card = i+str(j)
+            deck.append(card)
+        for j in ["S","T","R"]:
+            card = i+str(j)
+            deck.append(card)
+    deck.append("+4")
+    deck.append("+4")
+    deck.append("WC")
+    deck.append("WC")
+
+def randomCard():
+    card = deck[random.randint(0,len(deck)-1)]
+    deck.remove(card)
+    return card
+
+def startGame():
+    for i in [player,com]:
+        for j in range(0,8):
+            i.append(randomCard())
+    topcard = randomCard()
+    while topcard[1] in ["S","2","R"] or topcard in ["+4","WC"]:
+        topcard = randomCard()
+    return topcard
+
+def inputCard(col, val):
+    print("Your deck: ")
+    print(player)
+    while True:
+        card = input("Please choose a card from your deck [IF NO CARD, INPUT DRAW]:\n   > ")
+        if card == "DRAW":
+            print("Player Draws!")
+            player.append(randomCard())
+            card = col+val
+            return card, True
+        if card in player and (card[0] == col or card[1] == val or card in ["WC", "+4"]):
+            player.remove(card)
+            return card, False
+        else:
+            print("Invalid card")
+
+def comChoose(col,val):
+    for i in com:
+        if i[0] == col or i[1] == val or i in ["WC", "+4"]:
+            print("Computer: "+i)
+            com.remove(i)
+            return i, False
+    com.append(randomCard())
+    card = col+val
+    print("Computer Draws!")
+    return card, True
+
+def chooseColour(play):
+    if play == play:
+        while True:
+            col = input("Choose the colour:\n   > ")
+            if col in ["R","G","Y","B"]:
+                return col
+            print("Invalid colour")
+    else:
+        for i in com[0]:
+            if i[0] in ["R","G","Y","B"]:
+                return i[0]
+
+def drawCard(op,n):
+    if op == player:
+        print("Player draws",str(n),"cards!")
+    else:
+        print("Computer draws",str(n),"cards!")
+    for i in range(0,n):
+        op.append(randomCard())
+
+def checkEnd(play):
+    if len(play) == 0:
+        return True
+
+def turn(topcard, play, op):
+    endGame = False
+    while True:
+        print("Topcard: "+topcard)
+        col, val = topcard[0],topcard[1]
+        if play == player:
+            card,draw = inputCard(col, val)
+        else:
+            card,draw = comChoose(col, val)
+        if checkEnd(play):
+            if play == player:
+                endGame = "Player"
+            else:
+                endGame = "Computer"
+            break
+        col, val = card[0],card[1]
+        if draw == False:
+            if card[1] == "T":
+                drawCard(player,2)
+            elif card == "WC":
+                col = chooseColour(play)
+            elif card == "+4":
+                drawCard(player,4)
+                col = chooseColour(play)
+                val = "4"
+            topcard = col+val
+            if val != "S":
+                break
+        else:
+            break
+    return topcard, endGame
+
+def main():
+    genDeck()
+    endGame = False
+    count = 0
+    topcard = startGame()
+    while endGame == False:
+        count += 1
+        if count%2 == 1:
+            topcard, endGame = turn(topcard,player,com)
+        else:
+            topcard, endGame = turn(topcard,com,player)
+    print(endGame,"wins!")
+
+main()
