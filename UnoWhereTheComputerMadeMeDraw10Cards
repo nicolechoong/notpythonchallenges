@@ -60,7 +60,7 @@ def comChoose(col,val):
     return card, True
 
 def chooseColour(play):
-    if play == play:
+    if play == player:
         while True:
             col = input("Choose the colour:\n   > ")
             if col in ["R","G","Y","B"]:
@@ -129,3 +129,4 @@ def main():
     print(endGame,"wins!")
 
 main()
+
