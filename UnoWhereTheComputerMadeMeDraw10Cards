@@ -28,7 +28,7 @@ def startGame():
         for j in range(0,8):
             i.append(randomCard())
     topcard = randomCard()
-    while topcard[1] in ["S","2","R"] or topcard in ["+4","WC"]:
+    while topcard[1] in ["S","T","R"] or topcard in ["+4","WC"]:
         topcard = randomCard()
     return topcard
 
