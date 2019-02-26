@@ -1,0 +1,51 @@
+import copy
+
+playerGrid = []
+computerGrid = []
+
+def setupGrids():
+    array = []
+    for i in range(0,10):
+        array.append("")
+    for i in range(0,10):
+        playerGrid.append(copy.deepcopy(array))
+        computerGrid.append(copy.deepcopy(array))
+    return playerGrid, computerGrid
+
+def place(ship):
+    shippegs = {"C":5,"B":4,"R":3,"S":3,"D":2}
+    num = shippegs[ship]
+    while True:
+        valid = [False]
+        r = 0
+        while False in valid:
+            c = input("Please enter the coordinate")
+            print("help")
+            while not checkValid(c):
+                print("Invalid input")
+                c = input("Please enter the coordinate")
+            playerGrid[int(c[0])][int(c[1])] = "O"
+            for i in range(1,num):
+                playerGrid[int(c[0])+i][int(c[1])] = "X"
+                valid.append(checkValid(str(int(c[0])+i)+str(int(c[1]))))
+            valid.pop(0)
+
+
+
+
+def outputGrid():
+    for i in playerGrid:
+        print(i)
+
+def checkValid(coord):
+    if len(coord) > 2:
+        return False
+    else:
+        return True
+
+def main():
+    setupGrids()
+    place("C")
+    outputGrid()
+
+main()
