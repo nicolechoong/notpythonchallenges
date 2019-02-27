@@ -1,51 +1,219 @@
 import copy
+import random
 
-playerGrid = []
 computerGrid = []
 
-def setupGrids():
+def setupGrid():
+    grid = []
     array = []
-    for i in range(0,10):
-        array.append("")
-    for i in range(0,10):
-        playerGrid.append(copy.deepcopy(array))
-        computerGrid.append(copy.deepcopy(array))
-    return playerGrid, computerGrid
+    for i in range(0,11):
+        array.append(" ")
+    grid.append([" ","0","1","2","3","4","5","6","7","8","9"])
+    for i in ["A","B","C","D","E","F","G","H","I","J"]:
+        array[0] = str(i)
+        grid.append(copy.deepcopy(array))
+    return grid
 
-def place(ship):
+def boop(grid, num, c, r, ship):
+    grid[c[0]+1][c[1]+1] = "O"
+    if r == "N":
+        for i in range(1,num):
+            grid[c[0]+i+1][c[1]+1] = ship
+    elif r == "E":
+        for i in range(1,num):
+            grid[c[0]+1][c[1]-i+1] = ship
+    elif r == "S":
+        for i in range(1,num):
+            grid[c[0]-i+1][c[1]+1] = ship
+    elif r == "W":
+        for i in range(1,num):
+            grid[c[0]+1][c[1]+i+1] = ship
+
+def checkValid(grid, num, c, r):
+    if r == "N":
+        if c[0]+num-1 > 10:
+            return False
+        for i in range(1,num):
+            if grid[c[0]+i+1][c[1]+1] != " ":
+                return False
+    elif r == "E":
+        if c[1]-num+1 < 1:
+            return False
+        for i in range(1,num):
+            if grid[c[0]+1][c[1]-i+1] != " ":
+                return False
+    elif r == "S":
+        if c[0]-num+1 < 1:
+            return False
+        for i in range(1,num):
+            if grid[c[0]-i+1][c[1]+1] != " ":
+                return False
+    elif r == "W":
+        if c[1]+num-1 > 10:
+            return False
+        for i in range(1,num):
+            if grid[c[0]+1][c[1]+i+1] != " ":
+                return False
+    return True
+
+def getC(safety,col):
+    co = input("\nPlease enter the coordinate\n   > ")
+    while True:
+        try:
+            x = int(co[1])
+            break
+        except ValueError:
+            print("\nInvalid input\n")
+        co = input("Please enter the coordinate\n   > ")
+    while len(co) != 2 or safety[col[co[0]]+1][int(co[1])+1] != " ":
+        print("\nInvalid input\n")
+        co = input("Please enter the coordinate\n   > ")
+    co = str(col[co[0]])+str(int(co[1]))
+    c = []
+    c.append(int(co[0]))
+    c.append(int(co[1]))
+    return c
+
+def bombC(col):
+    co = input("\nPlease enter the coordinate\n   > ")
+    while True:
+        try:
+            x = int(co[1])
+            break
+        except ValueError:
+            print("\nInvalid input\n")
+        co = input("Please enter the coordinate\n   > ")
+    while len(co) != 2:
+        print("\nInvalid input\n")
+        co = input("Please enter the coordinate\n   > ")
+    co = str(col[co[0]])+str(int(co[1]))
+    c = []
+    c.append(int(co[0]))
+    c.append(int(co[1]))
+    return c
+
+def placeCom(ship,grid,col):
     shippegs = {"C":5,"B":4,"R":3,"S":3,"D":2}
     num = shippegs[ship]
     while True:
-        valid = [False]
-        r = 0
-        while False in valid:
-            c = input("Please enter the coordinate")
-            print("help")
-            while not checkValid(c):
-                print("Invalid input")
-                c = input("Please enter the coordinate")
-            playerGrid[int(c[0])][int(c[1])] = "O"
-            for i in range(1,num):
-                playerGrid[int(c[0])+i][int(c[1])] = "X"
-                valid.append(checkValid(str(int(c[0])+i)+str(int(c[1]))))
-            valid.pop(0)
+        row = random.randint(0,9)
+        col = random.randint(0,9)
+        co = str(row)+str(col)
+        c = []
+        c.append(int(co[0]))
+        c.append(int(co[1]))
+        r = random.choice(["N","E","S","W"])
+        if checkValid(grid, num, c, r):
+            boop(grid, num, c, r, ship)
+            grid[c[0]+1][c[1]+1] = ship
+            break
+    return grid
 
+def place(ship,grid,col):
+    safety = copy.deepcopy(grid)
+    shippegs = {"C":5,"B":4,"R":3,"S":3,"D":2}
+    num = shippegs[ship]
+    while True:
+        while True:
+            c = getC(safety,col)
+            r = input("\nPlease enter direction using cardinal points [O denotes the head of the ship]\n   > ")
+            while r not in ["N","E","S","W"]:
+                print("\nInvalid input\n")
+                r = input("Please enter direction using cardinal points [O denotes the head of the ship]\n   > ")
+            if checkValid(safety,num,c,r):
+                boop(safety, num, c, r, ship)
+                outputGrid(safety, "Your ships")
+                break
+            else:
+                print("\nInvalid input")
+        set = input("\nAccept position? [y/n]\n   > ")
+        if set == "y":
+            safety[c[0]+1][c[1]+1] = ship
+            outputGrid(safety, "Your ships")
+            break
+        else:
+            safety = copy.deepcopy(grid)
+    return safety
 
-
-
-def outputGrid():
-    for i in playerGrid:
+def outputGrid(grid, o):
+    print()
+    print(o)
+    for i in grid:
         print(i)
 
-def checkValid(coord):
-    if len(coord) > 2:
-        return False
+def pAttack(opp, col, grid, ship):
+    c = bombC(col)
+    if opp[c[0]+1][c[1]+1] not in ["C","B","R","S","D"]:
+        grid[c[0]+1][c[1]+1] = "O"
+        outputGrid(grid,"Your board")
     else:
-        return True
+        grid[c[0]+1][c[1]+1] = "X"
+        s = opp[c[0]+1][c[1]+1]
+        ship[s] = ship[s]-1
+        outputGrid(grid,"Your board")
+        for i in ["C","B","R","S","D"]:
+            if ship[i] ==  0:
+                print("\nYou sunk my battleship!")
+                ship[i] = 100
+    return ship
+
+def cAttack(opp, grid, ship):
+    while True:
+            row = random.randint(0,9)
+            col = random.randint(0,9)
+            if grid[row+1][col+1] == " ":
+                break
+    co = str(row)+str(col)
+    c = []
+    c.append(int(co[0]))
+    c.append(int(co[1]))
+    if opp[c[0]+1][c[1]+1] not in ["C","B","R","S","D"]:
+        grid[c[0]+1][c[1]+1] = "O"
+        outputGrid(grid,"Computer's board")
+    else:
+        grid[c[0]+1][c[1]+1] = "X"
+        s = opp[c[0]+1][c[1]+1]
+        ship[s] = ship[s]-1
+        outputGrid(grid,"Computer's board")
+        for i in ["C","B","R","S","D"]:
+            if ship[i] ==  0:
+                print("\nYour battleship has been sunk!")
+                ship[i] = 100
+    return ship
 
 def main():
-    setupGrids()
-    place("C")
-    outputGrid()
+    desc = {"C":"Carrier, with 5 holes, denoted by an 'C'","B":"Battleship, with 4 holes, denoted by an 'B'","R":"Cruiser, with 3 holes, denoted by an 'R'","S":"Submarine, with 3 holes, denoted by an 'S'","D":"Destroyer, with 2 holes, denoted by an 'D'"}
+    col = {"A":0,"B":1,"C":2,"D":3,"E":4,"F":5,"G":6,"H":7,"I":8,"J":9}
+    playerGrid = setupGrid()
+    computerGrid = copy.deepcopy(playerGrid)
+    pSeeGrid = copy.deepcopy(playerGrid)
+    cSeeGrid = copy.deepcopy(playerGrid)
+    pShip = {"C":5,"B":4,"R":3,"S":3,"D":2}
+    cShip = {"C":5,"B":4,"R":3,"S":3,"D":2}
+    outputGrid(playerGrid,"Your ships")
+    for i in ["C","B","R","S","D"]:
+        print("\nNow placing:")
+        print(desc[i])
+        playerGrid = copy.deepcopy(place(i,playerGrid,col))
+        computerGrid = copy.deepcopy(placeCom(i,computerGrid,col))
+    outputGrid(pSeeGrid,"Your board")
+    outputGrid(cShip,"Computer's board")
+    while True:
+        #Player
+        pShip = copy.deepcopy(pAttack(computerGrid, col, pSeeGrid, pShip))
+        count = 0
+        for j in ["C","B","R","S","D"]:
+            count += pShip[j]
+        if count == 500:
+            print("\nPlayer wins!")
+            break
+        #Computer
+        cShip = copy.deepcopy(cAttack(playerGrid, cSeeGrid, cShip))
+        count = 0
+        for j in ["C","B","R","S","D"]:
+            count += cShip[j]
+        if count == 500:
+            print("\nComputer wins!")
+            break
 
 main()
